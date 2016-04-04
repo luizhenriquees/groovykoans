@@ -72,7 +72,11 @@ class Koan05 extends GroovyTestCase {
         // http://docs.groovy-lang.org/latest/html/groovy-jdk/java/lang/Object.html#eachWithIndex(groovy.lang.Closure)
         def rangeResult = []
         // ------------ START EDITING HERE ----------------------
-
+        ('a'..'y').eachWithIndex{ def entry, int i ->
+            if (i % 2 == 0){
+                rangeResult += entry;
+            }
+        }
 
         // ------------ STOP EDITING HERE  ----------------------
         assert rangeResult == ['a', 'c', 'e', 'g', 'i', 'k', 'm', 'o', 'q', 's', 'u', 'w', 'y']
