@@ -66,7 +66,7 @@ class Koan04 extends GroovyTestCase {
         // Create a closure that accepts two integers, adds them, and multiplies the result by two
         def resultClosure
         // ------------ START EDITING HERE ----------------------
-        resultClosure = { int a, int b -> (a + b) * 2 }
+        resultClosure = { int a, b -> (a + b) * 2 }
         // ------------ STOP EDITING HERE  ----------------------
 
         assert resultClosure(2, 3) == 10
@@ -123,10 +123,8 @@ class Koan04 extends GroovyTestCase {
         StringWriter filteredResult = new StringWriter()
         def prefix = 'src/test/groovy/org/groovykoans/koan04/'
         // ------------ START EDITING HERE ----------------------
-        def file = new File("$prefix/exercise.txt")
-        file.filterLine(filteredResult) { String line ->
-            !line.startsWith('#')
-        }
+        def fileExercise = new File("$prefix/exercise.txt")
+        fileExercise.filterLine(filteredResult) { String linha -> !linha.startsWith('#'); }
         // ------------ STOP EDITING HERE  ----------------------
 
         String result = filteredResult.toString().trim().replaceAll(/[\n\r]+/, '\n')
