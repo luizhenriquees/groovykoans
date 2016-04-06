@@ -27,90 +27,128 @@ import groovy.xml.MarkupBuilder
  */
 class Koan10 extends GroovyTestCase {
 
-    void test01_XmlSlurpersReader() {
-        // Time to learn about the built-in magic that Groovy brings to the table.
-        // Using the reference at http://groovy-lang.org/processing-xml.html and
-        // http://docs.groovy-lang.org/latest/html/api/groovy/util/XmlSlurper.html, read the content of movies.xml
-        // and find out how many movies are listed.
-        def movieCount
-        // ------------ START EDITING HERE ----------------------
+	void test01_XmlSlurpersReader() {
+		// Time to learn about the built-in magic that Groovy brings to the table.
+		// Using the reference at http://groovy-lang.org/processing-xml.html and
+		// http://docs.groovy-lang.org/latest/html/api/groovy/util/XmlSlurper.html, read the content of movies.xml
+		// and find out how many movies are listed.
+		def movieCount
+		// ------------ START EDITING HERE ----------------------
+		String prefix = 'src/test/groovy/org/groovykoans/koan10/'
+		def xml = new XmlSlurper().parse("${prefix}movies.xml")
+		movieCount = xml.movie.size()
 
+		// ------------ STOP EDITING HERE  ----------------------
+		assert movieCount == 7
 
-        // ------------ STOP EDITING HERE  ----------------------
-        assert movieCount == 7
+		// And now, return all the movie names that contain the word 'the' (case-insensitive)
+		// Hint: pay attention to the type of objects you're getting.
+		List<String> moviesWithThe = []
+		// ------------ START EDITING HERE ----------------------
+		def filtroDeFilmesComThe = xml.movie.title.findAll {
+			((it.text().contains('the')) || (it.text().contains('The')))
+		}
 
-        // And now, return all the movie names that contain the word 'the' (case-insensitive)
-        // Hint: pay attention to the type of objects you're getting.
-        List<String> moviesWithThe = []
-        // ------------ START EDITING HERE ----------------------
+		moviesWithThe = filtroDeFilmesComThe.collect() {
+			it.text()
+		}
+		// ------------ STOP EDITING HERE  ----------------------
+		assert moviesWithThe.containsAll(['Conan the Barbarian', 'The Expendables', 'The Terminator'])
 
+		// How many movie ids have a value greater than 5?
+		def movieIdsGreaterThan5
+		// ------------ START EDITING HERE ----------------------
+		def filtroDeFilmesComIdMaiorQue5 = xml.movie.@id.findAll {
+			(it.text().toInteger() > 5)
+		}
+		movieIdsGreaterThan5 = filtroDeFilmesComIdMaiorQue5.collect().size()
+		// ------------ STOP EDITING HERE  ----------------------
+		assert movieIdsGreaterThan5 == 2
+	}
 
-        // ------------ STOP EDITING HERE  ----------------------
-        assert moviesWithThe.containsAll(['Conan the Barbarian', 'The Expendables', 'The Terminator'])
+	void test02_XmlSlurpersReader2() {
+		// Using your new skills, return a list of movies, sorted by year (and alphabetically within the same year)
+		// sort() and Spaceship operator can come in handy:
+		// http://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/Collection.html#sort(groovy.lang.Closure)
+		// http://mrhaki.blogspot.com/2009/08/groovy-goodness-spaceship-operator.html
 
-        // How many movie ids have a value greater than 5?
-        def movieIdsGreaterThan5
-        // ------------ START EDITING HERE ----------------------
+		List<String> sortedList = []
+		// ------------ START EDITING HERE ----------------------
+		String prefix = 'src/test/groovy/org/groovykoans/koan10/'
+		def xml = new XmlSlurper().parse("${prefix}movies.xml")
 
+		def listaAux;
+		def lista = xml.movie.collect().sort { a, b ->
+			if (a.year.toInteger() == b.year.toInteger()) {
+				a.title.text() <=> b.title.text()
+			} else {
+				a.year.toInteger() <=> b.year.toInteger()
+			}
+		}
 
-        // ------------ STOP EDITING HERE  ----------------------
-        assert movieIdsGreaterThan5 == 2
-    }
+		sortedList = lista.collect {
+			it.title.text()
+		}
 
-    void test02_XmlSlurpersReader2() {
-        // Using your new skills, return a list of movies, sorted by year (and alphabetically within the same year)
-        // sort() and Spaceship operator can come in handy:
-        // http://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/Collection.html#sort(groovy.lang.Closure)
-        // http://mrhaki.blogspot.com/2009/08/groovy-goodness-spaceship-operator.html
+		println sortedList
+		// ------------ STOP EDITING HERE  ----------------------
+		assert sortedList == ['Conan the Barbarian', 'The Terminator', 'Predator',
+		                      'Kindergarten Cop', 'Total Recall', 'True Lies', 'The Expendables']
+	}
 
-        List<String> sortedList = []
-        // ------------ START EDITING HERE ----------------------
+	void test03_XmlMarkupBuilder1() {
+		// Groovy's MarkupBuilder allows you to create tree structures very easily.
+		// Read here: http://groovy-lang.org/processing-xml.html#_markupbuilder
+		// And here: http://docs.groovy-lang.org/latest/html/api/groovy/xml/MarkupBuilder.html
 
+		// Let's try to create the following HTML in code:
+		// <html>
+		// <body>
+		//    <h1>title</h1>
+		// </body>
+		// </html>
 
-        // ------------ STOP EDITING HERE  ----------------------
-        assert sortedList == ['Conan the Barbarian', 'The Terminator', 'Predator',
-                'Kindergarten Cop', 'Total Recall', 'True Lies', 'The Expendables']
-    }
+		// I'm not even going to try to do it the Java way, but it would have been something along
+		// the lines of: http://stackoverflow.com/questions/5936003/write-html-file-using-java
 
-    void test03_XmlMarkupBuilder1() {
-        // Groovy's MarkupBuilder allows you to create tree structures very easily.
-        // Read here: http://groovy-lang.org/processing-xml.html#_markupbuilder
-        // And here: http://docs.groovy-lang.org/latest/html/api/groovy/xml/MarkupBuilder.html
+		// Using MarkupBuilder, create the above html as String
+		def html
+		// ------------ START EDITING HERE ----------------------
+		def writer = new StringWriter()
+		def xml = new MarkupBuilder(writer).html {
+			body {
+				h1('title')
+			}
+		}
+		html = writer.toString()
 
-        // Let's try to create the following HTML in code:
-        // <html>
-        // <body>
-        //    <h1>title</h1>
-        // </body>
-        // </html>
+		// ------------ STOP EDITING HERE  ----------------------
+		assert formatXml(html) == formatXml("<html><body><h1>title</h1></body></html>")
+	}
 
-        // I'm not even going to try to do it the Java way, but it would have been something along
-        // the lines of: http://stackoverflow.com/questions/5936003/write-html-file-using-java
+	void test04_XmlMarkupBuilder2() {
+		// Suppose we need to transform the movies.xml to a different format, as such:
+		// <movies>
+		//      <movie id='id' title='title' year='year'/>
+		// </movies>
 
-        // Using MarkupBuilder, create the above html as String
-        def html
-        // ------------ START EDITING HERE ----------------------
+		// We could use XSLT... but MarkupBuilder makes it a breeze! Use it to
+		// convert the movies.xml to the above format:
 
+		String convertedXml
+		// ------------ START EDITING HERE ----------------------
+		def writer = new StringWriter()
+		String prefix = 'src/test/groovy/org/groovykoans/koan10/'
+		def xmlLeitura = new XmlSlurper().parse("${prefix}movies.xml")
+		new MarkupBuilder(writer).movies {
+			xmlLeitura.movie.each {
+				movie('id': it.@id, 'title': it.title.text(), 'year': it.year.text())
+			}
+		}
+		convertedXml = writer.toString()
 
-        // ------------ STOP EDITING HERE  ----------------------
-        assert formatXml(html) == formatXml("<html><body><h1>title</h1></body></html>")
-    }
-
-    void test04_XmlMarkupBuilder2() {
-        // Suppose we need to transform the movies.xml to a different format, as such:
-        // <movies>
-        //      <movie id='id' title='title' year='year'/>
-        // </movies>
-
-        // We could use XSLT... but MarkupBuilder makes it a breeze! Use it to
-        // convert the movies.xml to the above format:
-
-        String convertedXml
-        // ------------ START EDITING HERE ----------------------
-
-
-        // ------------ STOP EDITING HERE  ----------------------
-        def expected = """|<movies>
+		// ------------ STOP EDITING HERE  ----------------------
+		def expected = """|<movies>
                             |  <movie id='6' title='Total Recall' year='1990' />
                             |  <movie id='4' title='The Terminator' year='1984' />
                             |  <movie id='5' title='The Expendables' year='2010' />
@@ -120,46 +158,53 @@ class Koan10 extends GroovyTestCase {
                             |  <movie id='7' title='Kindergarten Cop' year='1990' />
                             |</movies>""".stripMargin()
 
-        assert formatXml(expected) == formatXml(convertedXml)
-    }
+		assert formatXml(expected) == formatXml(convertedXml)
+	}
 
-    private String formatXml(String xml) {
-        def stringWriter = new StringWriter()
-        def node = new XmlParser().parseText(xml.toString());
-        new XmlNodePrinter(new PrintWriter(stringWriter)).print(node)
-        return stringWriter.toString()
-    }
+	private String formatXml(String xml) {
+		def stringWriter = new StringWriter()
+		def node = new XmlParser().parseText(xml.toString());
+		new XmlNodePrinter(new PrintWriter(stringWriter)).print(node)
+		return stringWriter.toString()
+	}
 
-    void test05_AntBuilderCopy() {
-        // Just in case you've never heard of Ant - it's a general purpose build tool. Many things can be said about
-        // it, but nobody will deny its usefulness. It comes packed with an array of tasks, ranging from build,
-        // file manipulation, communication, and others. Read the basics here:
-        // http://supportweb.cs.bham.ac.uk/docs/tutorials/docsystem/build/tutorials/ant/ant.html
+	void test05_AntBuilderCopy() {
+		// Just in case you've never heard of Ant - it's a general purpose build tool. Many things can be said about
+		// it, but nobody will deny its usefulness. It comes packed with an array of tasks, ranging from build,
+		// file manipulation, communication, and others. Read the basics here:
+		// http://supportweb.cs.bham.ac.uk/docs/tutorials/docsystem/build/tutorials/ant/ant.html
 
-        // So how does Groovy support Ant? With AntBuilder: http://docs.groovy-lang.org/latest/html/documentation/ant-builder.html
+		// So how does Groovy support Ant? With AntBuilder: http://docs.groovy-lang.org/latest/html/documentation/ant-builder.html
 
-        // Let's start by copying movies.xml to movies_copy.xml in the same directory using Ant's Copy task:
-        // http://ant.apache.org/manual/Tasks/copy.html
-        def baseDir = 'src/test/groovy/org/groovykoans/koan10'
-        // ------------ START EDITING HERE ----------------------
+		// Let's start by copying movies.xml to movies_copy.xml in the same directory using Ant's Copy task:
+		// http://ant.apache.org/manual/Tasks/copy.html
+		def baseDir = 'src/test/groovy/org/groovykoans/koan10'
+		// ------------ START EDITING HERE ----------------------
+		def ant = new AntBuilder()
 
+		// File copying with AntBuilder
+		def targetFileFromAntCopyName = baseDir + '/movies_copy.xml'
+		def sourceFilePathAndName = baseDir + '/movies.xml'
+		def targetFileFromAntCopy = ant.copy(file: sourceFilePathAndName,
+				tofile: targetFileFromAntCopyName)
+		// ------------ STOP EDITING HERE  ----------------------
+		assert new File("${baseDir}/movies_copy.xml").exists()
+	}
 
-        // ------------ STOP EDITING HERE  ----------------------
-        assert new File("${baseDir}/movies_copy.xml").exists()
-    }
+	void test06_AntBuilderChecksum() {
+		// Ant uses properties (variables in Ant) extensively. Let's find out how.
 
-    void test06_AntBuilderChecksum() {
-        // Ant uses properties (variables in Ant) extensively. Let's find out how.
-
-        // Using the checksum Ant task, find out the checksum for movies.xml
-        // http://ant.apache.org/manual/Tasks/checksum.html
-        def baseDir = 'src/test/groovy/org/groovykoans/koan10'
-        def actualChecksum
-        // ------------ START EDITING HERE ----------------------
-
-
-        // ------------ STOP EDITING HERE  ----------------------
-        assert actualChecksum == '9160b6a6555e31ebc01f30c1db7e1277'
-    }
+		// Using the checksum Ant task, find out the checksum for movies.xml
+		// http://ant.apache.org/manual/Tasks/checksum.html
+		def baseDir = 'src/test/groovy/org/groovykoans/koan10'
+		def actualChecksum
+		// ------------ START EDITING HERE ----------------------
+		def ant = new AntBuilder()
+		def sourceFilePathAndName = baseDir + '/movies.xml'
+		actualChecksum = ant.checksum(file: sourceFilePathAndName, property: "resultChecksum")
+		actualChecksum = ant.project.properties.resultChecksum;
+		// ------------ STOP EDITING HERE  ----------------------
+		assert actualChecksum == '9160b6a6555e31ebc01f30c1db7e1277'
+	}
 
 }
