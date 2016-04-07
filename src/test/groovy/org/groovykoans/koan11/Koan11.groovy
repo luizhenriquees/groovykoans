@@ -132,7 +132,10 @@ class Koan11 extends GroovyTestCase {
 			// last names of the people in Person
 			def eCount = 0
 			// ------------ START EDITING HERE ----------------------
-			db.eachRow('')
+			def findVal = '%e%'
+			db.eachRow("SELECT COUNT(*) FROM PERSON WHERE lastname LIKE ${findVal}") { row ->
+				eCount = "${row[0]}".toInteger()
+			}
 			// ------------ STOP EDITING HERE  ----------------------
 			assert eCount == 2
 		}
@@ -147,7 +150,14 @@ class Koan11 extends GroovyTestCase {
 
 			// Use eachRow() to change all the first names that contain the letter 'a' (lowercase) into 'Alf'.
 			// ------------ START EDITING HERE ----------------------
-
+			def findVal = '%a%'
+			def updateSql = "UPDATE PERSON SET firstname = 'Alf' WHERE firstname = ?"
+			def params = []
+			db.eachRow("SELECT firstname FROM PERSON WHERE firstname LIKE ${findVal}") { row ->
+				def candidateName = row[0].toString()
+				params = [candidateName]
+				db.executeUpdate updateSql, params
+			}
 			// ------------ STOP EDITING HERE  ----------------------
 			assert db.firstRow("select count(*) c from PERSON where FIRSTNAME = 'Alf'").c == 2
 		}
